@@ -1,0 +1,14 @@
+<h1>Your Cart</h1>
+<% if (cart.length === 0) { %>
+  <p>Cart is empty</p>
+<% } else { %>
+  <% cart.forEach(item => { %>
+    <p><%= item.name %> × <%= item.quantity %> = $<%= item.price * item.quantity %></p>
+  <% }) %>
+  <h3>Total: $<%= total %></h3>
+  <form action="/checkout" method="POST">
+    <input type="email" name="email" placeholder="Your Email" required>
+    <button>Pay with Stripe</button>
+  </form>
+<% } %>
+<a href="/">Back to Shop</a>

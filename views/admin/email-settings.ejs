@@ -1,0 +1,20 @@
+<!-- views/admin/email-settings.ejs -->
+<h1>Email Settings</h1>
+<form action="/admin/email-config" method="POST">
+  <p>
+    <label>Send From (Gmail):</label><br>
+    <input type="email" name="emailUser" value="<%= config.emailUser %>" required style="width:100%; padding:8px; font-size:16px;">
+  </p>
+  <p>
+    <label>App Password:</label><br>
+    <input type="password" name="emailPass" value="<%= config.emailPass %>" required style="width:100%; padding:8px; font-size:16px;">
+    <br><small><a href="https://myaccount.google.com/apppasswords" target="_blank">Get App Password</a></small>
+  </p>
+  <p>
+    <label>Receive Alerts At:</label><br>
+    <input type="email" name="sellerEmail" value="<%= config.sellerEmail %>" required style="width:100%; padding:8px; font-size:16px;">
+  </p>
+  <button type="submit" style="padding:12px 24px; background:#28a745; color:white; border:none; font-size:16px;">Save Email Settings</button>
+</form>
+<br>
+<a href="/admin">Back to Dashboard</a>

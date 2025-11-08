@@ -1,0 +1,46 @@
+<h1>Admin Panel</h1>
+<a href="/admin/login?logout=1">Logout</a>
+<br>
+<a href="/admin/email-settings" style="color:#007bff; font-weight:bold;">Email Settings</a>
+
+<h2>Stripe Keys</h2>
+<form action="/admin/config" method="POST">
+  <input type="text" name="pk" value="<%= config.stripePublishableKey %>" placeholder="pk_test_..." required>
+  <input type="text" name="sk" value="<%= config.stripeSecretKey %>" placeholder="sk_test_..." required>
+  <button>Save Keys</button>
+</form>
+
+<h2>Orders</h2>
+<% orders.forEach(o => { %>
+  <div style="border: 1px solid #aaa; margin: 10px; padding: 10px;">
+    <p><strong>#<%= o._id %></strong> | <%= o.email %> | $<%= o.total %> | <i><%= o.status %></i></p>
+    <% if (o.status === 'Pending') { %>
+      <form action="/admin/order/confirm/<%= o._id %>" method="POST" style="display:inline;">
+        <button>Confirm</button>
+      </form>
+      <form action="/admin/order/cancel/<%= o._id %>" method="POST" style="display:inline;">
+        <button>Cancel</button>
+      </form>
+    <% } %>
+  </div>
+<% }) %>
+
+<h2>Add Product</h2>
+<form action="/admin/product/add" method="POST" enctype="multipart/form-data">
+  <input type="text" name="name" placeholder="Name" required><br>
+  <input type="text" name="desc" placeholder="Description" required><br>
+  <input type="number" name="price" placeholder="Price" required><br>
+  <input type="file" name="image" accept="image/*" required><br>
+  <button>Add</button>
+</form>
+
+<h2>Edit Products</h2>
+<% products.forEach(p => { %>
+  <form action="/admin/product/edit/<%= p._id %>" method="POST" enctype="multipart/form-data" style="border:1px solid #ddd; margin:10px; padding:10px;">
+    <input type="text" name="name" value="<%= p.name %>">
+    <input type="text" name="desc" value="<%= p.description %>">
+    <input type="number" name="price" value="<%= p.price %>">
+    <input type="file" name="image" accept="image/*">
+    <button>Update</button>
+  </form>
+<% }) %>

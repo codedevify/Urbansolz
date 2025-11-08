@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Shoe Store</title></head>
+<body>
+  <h1>Shoe Store</h1>
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+    <% products.forEach(p => { %>
+      <div style="border: 1px solid #ccc; padding: 10px;">
+        <img src="<%= p.image %>" width="100%">
+        <h3><%= p.name %></h3>
+        <p><%= p.description %></p>
+        <p><strong>$<%= p.price %></strong></p>
+        <form action="/add-to-cart/<%= p._id %>" method="POST">
+          <button>Add to Cart</button>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+  <hr>
+  <a href="/cart">View Cart (<%= (cart || []).reduce((s,i)=>s+i.quantity,0) %>)</a>
+  <a href="/admin/login" style="float: right;">Admin</a>
+</body>
+</html>

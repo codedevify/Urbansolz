@@ -1,0 +1,15 @@
+# NEVER upload these!
+node_modules/
+.env
+public/uploads/*
+*.log
+
+# npm / yarn
+package-lock.json
+yarn.lock
+
+# Editor / OS junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
