@@ -93,6 +93,7 @@ async function seedData() {
     console.error('Seed error:', e);
   }
 }
+
 seedData();
 
 // --- SERVER ---
