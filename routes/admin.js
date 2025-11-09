@@ -18,7 +18,7 @@ cloudinary.config({
 module.exports = function(getEmailConfig, app) {
   const router = require('express').Router();
 
-  const storage = multer.memoryStorage(); // Use memory for Cloudinary
+  const storage = multer.memoryStorage();
   const upload = multer({ storage });
 
   const isAdmin = (req, res, next) => {
@@ -26,30 +26,42 @@ module.exports = function(getEmailConfig, app) {
     res.redirect('/admin/login');
   };
 
-  // Login
+  // === LOGIN ===
   router.get('/login', (req, res) => res.render('admin/login'));
   router.post('/login', async (req, res) => {
-    const admin = await Admin.findOne({ username: req.body.username, password: req.body.password });
-    if (admin) {
-      req.session.admin = true;
-      res.redirect('/admin');
-    } else {
-      res.send('Invalid login');
+    try {
+      const admin = await Admin.findOne({ 
+        username: req.body.username, 
+        password: req.body.password 
+      });
+      if (admin) {
+        req.session.admin = true;
+        res.redirect('/admin');
+      } else {
+        res.send('Invalid login');
+      }
+    } catch (err) {
+      res.status(500).send('Server error');
     }
   });
 
-  // Dashboard
+  // === DASHBOARD ===
   router.get('/', isAdmin, async (req, res) => {
-    const [orders, products, config, emailConfig] = await Promise.all([
-      Order.find().populate('items.product'),
-      Product.find(),
-      Config.findOne(),
-      EmailConfig.findOne()
-    ]);
-    res.render('admin/dashboard', { orders, products, config, emailConfig });
+    try {
+      const [orders, products, config, emailConfig] = await Promise.all([
+        Order.find().populate('items.product'),
+        Product.find(),
+        Config.findOne(),
+        EmailConfig.findOne()
+      ]);
+      res.render('admin/dashboard', { orders, products, config, emailConfig });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Server error');
+    }
   });
 
-  // Email Settings
+  // === EMAIL SETTINGS ===
   router.get('/email-settings', isAdmin, async (req, res) => {
     const emailConfig = await EmailConfig.findOne();
     res.render('admin/email-settings', { config: emailConfig });
@@ -73,90 +85,138 @@ module.exports = function(getEmailConfig, app) {
     res.redirect('/admin/email-settings');
   });
 
-  // Add Product (Cloudinary Upload)
+  // === ADD PRODUCT ===
   router.post('/product/add', isAdmin, upload.single('image'), async (req, res) => {
     let imageUrl = '';
+
     if (req.file) {
-      const result = await cloudinary.uploader.upload_stream(
-        { resource_type: 'auto' },
-        (error, result) => {
-          if (error) {
-            console.error('Cloudinary upload error:', error);
-          } else {
-            imageUrl = result.secure_url;
+      try {
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(req.file.buffer);
+        });
+        imageUrl = result.secure_url;
+      } catch (err) {
+        console.error('Image upload failed:', err);
+        return res.status(500).send('Failed to upload image');
+      }
+    }
+
+    try {
+      const product = new Product({
+        name: req.body.name,
+        description: req.body.desc,
+        price: req.body.price,
+        image: imageUrl
+      });
+      await product.save();
+      res.redirect('/admin');
+    } catch (err) {
+      console.error(err);
+      res.status(500).send('Failed to save product');
+    }
+  });
+
+  // === EDIT PRODUCT ===
+  router.post('/product/edit/:id', isAdmin, upload.single('image'), async (req, res) => {
+    try {
+      const product = await Product.findById(req.params.id);
+      if (!product) return res.status(404).send('Product not found');
+
+      const update = {
+        name: req.body.name,
+        description: req.body.desc,
+        price: req.body.price
+      };
+
+      if (req.file) {
+        // Delete old Cloudinary image if exists
+        if (product.image && typeof product.image === 'string' && product.image.startsWith('https://res.cloudinary.com/')) {
+          const publicId = product.image.split('/').pop().split('.')[0];
+          try {
+            await cloudinary.uploader.destroy(publicId);
+          } catch (err) {
+            console.warn('Failed to delete old image:', err);
           }
         }
-      ).end(req.file.buffer);
-    }
 
-    const product = new Product({
-      name: req.body.name,
-      description: req.body.desc,
-      price: req.body.price,
-      image: imageUrl || req.body.existingImage // Fallback for no file
-    });
-    await product.save();
-    res.redirect('/admin');
+        // Upload new image
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image' },
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+          uploadStream.end(req.file.buffer);
+        });
+        update.image = result.secure_url;
+      }
+      // If no new file, keep old image (even if empty)
+
+      await Product.findByIdAndUpdate(req.params.id, update);
+      res.redirect('/admin');
+    } catch (err) {
+      console.error('Edit error:', err);
+      res.status(500).send('Server error');
+    }
   });
 
-  // Edit Product (Cloudinary Upload)
-  router.post('/product/edit/:id', isAdmin, upload.single('image'), async (req, res) => {
-    const product = await Product.findById(req.params.id);
-    const update = {
-      name: req.body.name,
-      description: req.body.desc,
-      price: req.body.price
-    };
+  // === DELETE PRODUCT ===
+  router.post('/product/delete/:id', isAdmin, async (req, res) => {
+    try {
+      const product = await Product.findById(req.params.id);
+      if (!product) return res.status(404).send('Product not found');
 
-    if (req.file) {
-      // Delete old image from Cloudinary if exists
-      if (product.image.startsWith('https://res.cloudinary.com/')) {
+      // Delete image from Cloudinary if it's a Cloudinary URL
+      if (product.image && typeof product.image === 'string' && product.image.startsWith('https://res.cloudinary.com/')) {
         const publicId = product.image.split('/').pop().split('.')[0];
-        await cloudinary.uploader.destroy(publicId);
+        try {
+          await cloudinary.uploader.destroy(publicId);
+        } catch (err) {
+          console.warn('Failed to delete image from Cloudinary:', err);
+        }
       }
 
-      // Upload new
-      const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          { resource_type: 'auto' },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        ).end(req.file.buffer);
-      });
-      update.image = result.secure_url;
+      await Product.findByIdAndDelete(req.params.id);
+      res.redirect('/admin');
+    } catch (err) {
+      console.error('Delete error:', err);
+      res.status(500).send('Failed to delete product');
     }
-
-    await Product.findByIdAndUpdate(req.params.id, update);
-    res.redirect('/admin');
   });
 
-  // Confirm Order
+  // === CONFIRM ORDER ===
   router.post('/order/confirm/:id', isAdmin, async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { status: 'Confirmed' });
     res.redirect('/admin');
   });
 
-  // Cancel Order
+  // === CANCEL ORDER ===
   router.post('/order/cancel/:id', isAdmin, async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { status: 'Cancelled' });
     res.redirect('/admin');
   });
 
-  // Update Stripe Keys
+  // === UPDATE STRIPE KEYS ===
   router.post('/config', isAdmin, async (req, res) => {
     await Config.updateOne(
       {},
       {
         stripePublishableKey: req.body.pk,
         stripeSecretKey: req.body.sk
-      }
+      },
+      { upsert: true }
     );
     res.redirect('/admin');
   });
 
   return router;
 };
-//eg
-
