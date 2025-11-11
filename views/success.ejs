@@ -1,3 +1,77 @@
-<h1>Payment Successful!</h1>
-<p>Check your email for order confirmation.</p>
-<a href="/">Continue Shopping</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Success | Urban Solz</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* === RESET & BASE === */
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',sans-serif;
+  background:linear-gradient(180deg,#f6f0e9 0%,#f5deb3 100%);
+  color:#3e2723;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:2rem;
+}
+
+/* === SUCCESS CARD === */
+.success-card{
+  background:#fff;
+  padding:4rem 3rem;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  max-width:500px;
+  width:100%;
+  animation:fadein 1s ease;
+}
+@keyframes fadein{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+.success-card h1{
+  font-size:2.5rem;
+  margin-bottom:1rem;
+  color:#4caf50;
+  font-weight:700;
+}
+.success-card p{
+  font-size:1.1rem;
+  margin-bottom:2rem;
+  color:#4e342e;
+}
+.success-card a{
+  display:inline-block;
+  background:#3e2723;
+  color:#fff;
+  padding:12px 30px;
+  border-radius:25px;
+  text-decoration:none;
+  font-weight:600;
+  transition:background .3s,transform .3s;
+}
+.success-card a:hover{
+  background:#a1887f;
+  transform:scale(1.05);
+}
+
+/* === RESPONSIVE === */
+@media(max-width:600px){
+  .success-card{padding:2rem 1.5rem;}
+  .success-card h1{font-size:2rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="success-card">
+  <h1>🎉 Success!</h1>
+  <p><%= message || 'Your payment was successful. Check your email for order details.' %></p>
+  <a href="/">Continue Shopping</a>
+</div>
+
+</body>
+</html>
