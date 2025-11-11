@@ -26,8 +26,16 @@ module.exports = function(getEmailConfig, app) {
     res.redirect('/admin/login');
   };
 
-  // === LOGIN ===
-  router.get('/login', (req, res) => res.render('admin/login'));
+  // Logout handler
+  router.get('/login', (req, res) => {
+    if (req.query.logout) {
+      req.session.destroy();
+      res.redirect('/');
+      return;
+    }
+    res.render('admin/login');
+  });
+
   router.post('/login', async (req, res) => {
     try {
       const admin = await Admin.findOne({ 
@@ -45,7 +53,7 @@ module.exports = function(getEmailConfig, app) {
     }
   });
 
-  // === DASHBOARD ===
+  // Dashboard
   router.get('/', isAdmin, async (req, res) => {
     try {
       const [orders, products, config, emailConfig] = await Promise.all([
@@ -54,17 +62,17 @@ module.exports = function(getEmailConfig, app) {
         Config.findOne(),
         EmailConfig.findOne()
       ]);
-      res.render('admin/dashboard', { orders, products, config, emailConfig });
+      res.render('admin/dashboard', { orders, products, config: config || {}, emailConfig: emailConfig || {} });
     } catch (err) {
       console.error(err);
       res.status(500).send('Server error');
     }
   });
 
-  // === EMAIL SETTINGS ===
+  // Email Settings
   router.get('/email-settings', isAdmin, async (req, res) => {
     const emailConfig = await EmailConfig.findOne();
-    res.render('admin/email-settings', { config: emailConfig });
+    res.render('admin/email-settings', { config: emailConfig || {} });
   });
 
   router.post('/email-config', isAdmin, async (req, res) => {
@@ -75,19 +83,19 @@ module.exports = function(getEmailConfig, app) {
       { upsert: true }
     );
 
-    // Refresh transporter
+    // Refresh global getEmailConfig and store transporter
     const storeRoutes = require('./store');
     const storeRouter = storeRoutes(getEmailConfig, app);
     if (storeRouter.createTransporter) {
-      storeRouter.createTransporter();
+      storeRouter.createTransporter();  // Now actually refreshes
     }
 
     res.redirect('/admin/email-settings');
   });
 
-  // === ADD PRODUCT ===
+  // Add Product
   router.post('/product/add', isAdmin, upload.single('image'), async (req, res) => {
-    let imageUrl = '';
+    let imageUrl = req.body.existingImage || '';  // Fallback for no file
 
     if (req.file) {
       try {
@@ -112,7 +120,7 @@ module.exports = function(getEmailConfig, app) {
       const product = new Product({
         name: req.body.name,
         description: req.body.desc,
-        price: req.body.price,
+        price: parseFloat(req.body.price),
         image: imageUrl
       });
       await product.save();
@@ -123,7 +131,7 @@ module.exports = function(getEmailConfig, app) {
     }
   });
 
-  // === EDIT PRODUCT ===
+  // Edit Product
   router.post('/product/edit/:id', isAdmin, upload.single('image'), async (req, res) => {
     try {
       const product = await Product.findById(req.params.id);
@@ -132,7 +140,8 @@ module.exports = function(getEmailConfig, app) {
       const update = {
         name: req.body.name,
         description: req.body.desc,
-        price: req.body.price
+        price: parseFloat(req.body.price),
+        image: product.image  // Keep old by default
       };
 
       if (req.file) {
@@ -159,7 +168,6 @@ module.exports = function(getEmailConfig, app) {
         });
         update.image = result.secure_url;
       }
-      // If no new file, keep old image (even if empty)
 
       await Product.findByIdAndUpdate(req.params.id, update);
       res.redirect('/admin');
@@ -169,7 +177,7 @@ module.exports = function(getEmailConfig, app) {
     }
   });
 
-  // === DELETE PRODUCT ===
+  // Delete Product
   router.post('/product/delete/:id', isAdmin, async (req, res) => {
     try {
       const product = await Product.findById(req.params.id);
@@ -193,19 +201,19 @@ module.exports = function(getEmailConfig, app) {
     }
   });
 
-  // === CONFIRM ORDER ===
+  // Confirm Order
   router.post('/order/confirm/:id', isAdmin, async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { status: 'Confirmed' });
     res.redirect('/admin');
   });
 
-  // === CANCEL ORDER ===
+  // Cancel Order
   router.post('/order/cancel/:id', isAdmin, async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { status: 'Cancelled' });
     res.redirect('/admin');
   });
 
-  // === UPDATE STRIPE KEYS ===
+  // Update Stripe Keys
   router.post('/config', isAdmin, async (req, res) => {
     await Config.updateOne(
       {},
