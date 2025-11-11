@@ -123,8 +123,12 @@ async function seedData() {
 seedData();
 
 // --- SERVER ---
+//const PORT = process.env.PORT || 3000;
+//app.listen(PORT, () => {
+//  console.log(`Server running on port ${PORT}`);
+//  console.log(`LIVE: https://${process.env.RENDER_EXTERNAL_HOSTNAME}`);
+//});
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`LIVE: https://${process.env.RENDER_EXTERNAL_HOSTNAME}`);
 });
