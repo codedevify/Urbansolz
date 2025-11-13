@@ -1,163 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Cart | Urban Solz</title>
-<style>
-/* === RESET & BASE === */
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  font-family:'Poppins',sans-serif;
-  background:linear-gradient(180deg,#f6f0e9 0%,#f5deb3 100%);
-  color:#3e2723;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Cart | Urban Solz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* === RESET & BASE === */
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(180deg,#f6f0e9 0%,#f5deb3 100%);
+      color:#3e2723;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
 
-/* === HEADER === */
-header{
-  background:rgba(255,255,255,0.95);
-  backdrop-filter:blur(10px);
-  position:sticky;top:0;z-index:1000;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:1rem 6%;
-  box-shadow:0 4px 10px rgba(0,0,0,0.05);
-}
-header h1{
-  font-size:1.5rem;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  color:#3e2723;
-}
-header a{
-  color:#4e342e;
-  text-decoration:none;
-  font-weight:500;
-  transition:color .3s;
-}
-header a:hover{color:#a1887f}
+    /* === HEADER === */
+    header{
+      background:rgba(255,255,255,0.95);
+      backdrop-filter:blur(10px);
+      position:sticky;top:0;z-index:1000;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:1rem 6%;
+      box-shadow:0 4px 10px rgba(0,0,0,0.05);
+    }
+    header h1{
+      font-size:1.5rem;
+      font-weight:700;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      color:#3e2723;
+    }
+    header a{
+      color:#4e342e;
+      text-decoration:none;
+      font-weight:500;
+      transition:color .3s;
+    }
+    header a:hover{color:#a1887f}
 
-/* === MAIN CART SECTION === */
-main{
-  flex:1;
-  max-width:700px;
-  margin:80px auto;
-  padding:0 6%;
-  text-align:center;
-  animation:fadein 1s ease;
-}
-@keyframes fadein{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+    /* === MAIN CART SECTION === */
+    main{
+      flex:1;
+      max-width:700px;
+      margin:80px auto;
+      padding:0 6%;
+      text-align:center;
+      animation:fadein 1s ease;
+    }
+    @keyframes fadein{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
 
-main h1{
-  font-size:2rem;
-  font-weight:700;
-  margin-bottom:25px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-}
+    main h1{
+      font-size:2rem;
+      font-weight:700;
+      margin-bottom:25px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
 
-/* === CART ITEMS === */
-.cart-items{
-  background:#fff;
-  border-radius:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.08);
-  padding:30px;
-  text-align:left;
-  margin-bottom:30px;
-}
-.cart-item{
-  display:flex;
-  justify-content:space-between;
-  border-bottom:1px solid #f0e0c0;
-  padding:10px 0;
-  font-size:1rem;
-}
-.cart-item:last-child{border-bottom:none;}
-.cart-item strong{color:#3e2723;}
+    /* === CART ITEMS === */
+    .cart-items{
+      background:#fff;
+      border-radius:20px;
+      box-shadow:0 10px 25px rgba(0,0,0,0.08);
+      padding:30px;
+      text-align:left;
+      margin-bottom:30px;
+    }
+    .cart-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:1px solid #f0e0c0;
+      padding:15px 0;
+      font-size:1rem;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .cart-item:last-child{border-bottom:none;}
+    .cart-item strong{color:#3e2723;}
+    .size-select{
+      padding:6px 10px;
+      border:1px solid #ccc;
+      border-radius:8px;
+      font-size:0.9rem;
+    }
 
-/* === TOTAL === */
-.total{
-  font-size:1.2rem;
-  font-weight:700;
-  text-align:right;
-  margin-top:15px;
-  color:#3e2723;
-}
+    /* === REMOVE BUTTON === */
+    .remove-btn{
+      background:#d32f2f;
+      color:#fff;
+      border:none;
+      padding:6px 12px;
+      border-radius:12px;
+      font-size:0.85rem;
+      cursor:pointer;
+      transition:background .3s;
+    }
+    .remove-btn:hover{background:#b71c1c;}
 
-/* === CHECKOUT FORM === */
-form{
-  background:#fff;
-  border-radius:20px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.08);
-  padding:25px;
-  text-align:center;
-  transition:transform .3s;
-}
-form:hover{transform:translateY(-3px);}
-form input{
-  width:100%;
-  padding:12px 14px;
-  border:1px solid #ccc;
-  border-radius:10px;
-  font-size:1rem;
-  margin-bottom:15px;
-  transition:border-color .3s,box-shadow .3s;
-}
-form input:focus{
-  border-color:#a1887f;
-  box-shadow:0 0 6px rgba(161,136,127,0.5);
-  outline:none;
-}
-form button{
-  width:100%;
-  padding:12px;
-  background:#3e2723;
-  color:#fff;
-  border:none;
-  border-radius:25px;
-  font-size:1rem;
-  font-weight:600;
-  cursor:pointer;
-  transition:background .3s,transform .3s;
-}
-form button:hover{
-  background:#a1887f;
-  color:#3e2723;
-  transform:scale(1.05);
-}
+    /* === CLEAR ALL === */
+    .clear-all{
+      display:inline-block;
+      background:#d32f2f;
+      color:#fff;
+      padding:10px 20px;
+      border-radius:15px;
+      font-size:0.9rem;
+      text-decoration:none;
+      margin-top:15px;
+      transition:background .3s;
+    }
+    .clear-all:hover{background:#b71c1c;}
 
-/* === EMPTY CART === */
-.empty{
-  font-size:1.1rem;
-  color:#4e342e;
-  background:#fff;
-  padding:30px;
-  border-radius:20px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.08);
-}
+    /* === TOTAL === */
+    .total{
+      font-size:1.2rem;
+      font-weight:700;
+      text-align:right;
+      margin-top:15px;
+      color:#3e2723;
+    }
 
-/* === BACK LINK === */
-.back-link{
-  display:inline-block;
-  margin-top:30px;
-  text-decoration:none;
-  font-weight:500;
-  color:#3e2723;
-  transition:color .3s;
-}
-.back-link:hover{color:#a1887f}
+    /* === CHECKOUT FORM === */
+    form{
+      background:#fff;
+      border-radius:20px;
+      box-shadow:0 8px 25px rgba(0,0,0,0.08);
+      padding:25px;
+      text-align:center;
+      transition:transform .3s;
+    }
+    form:hover{transform:translateY(-3px);}
+    form input{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid #ccc;
+      border-radius:10px;
+      font-size:1rem;
+      margin-bottom:15px;
+      transition:border-color .3s,box-shadow .3s;
+    }
+    form input:focus{
+      border-color:#a1887f;
+      box-shadow:0 0 6px rgba(161,136,127,0.5);
+      outline:none;
+    }
+    form button{
+      width:100%;
+      padding:12px;
+      background:#3e2723;
+      color:#fff;
+      border:none;
+      border-radius:25px;
+      font-size:1rem;
+      font-weight:600;
+      cursor:pointer;
+      transition:background .3s,transform .3s;
+    }
+    form button:hover{
+      background:#a1887f;
+      color:#3e2723;
+      transform:scale(1.05);
+    }
 
-/* === RESPONSIVE === */
-@media(max-width:600px){
-  main{margin:60px auto;}
-  main h1{font-size:1.7rem;}
-  .cart-item{flex-direction:column;align-items:flex-start;}
-  .total{text-align:left;}
-}
-</style>
+    /* === EMPTY CART === */
+    .empty{
+      font-size:1.1rem;
+      color:#4e342e;
+      background:#fff;
+      padding:30px;
+      border-radius:20px;
+      box-shadow:0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    /* === BACK LINK === */
+    .back-link{
+      display:inline-block;
+      margin-top:30px;
+      text-decoration:none;
+      font-weight:500;
+      color:#3e2723;
+      transition:color .3s;
+    }
+    .back-link:hover{color:#a1887f}
+
+    /* === RESPONSIVE === */
+    @media(max-width:600px){
+      main{margin:60px auto;}
+      main h1{font-size:1.7rem;}
+      .cart-item{flex-direction:column;align-items:flex-start;}
+      .total{text-align:left;}
+    }
+  </style>
 </head>
 <body>
 
@@ -171,17 +208,40 @@ form button:hover{
 
   <% if (cart.length === 0) { %>
     <div class="empty">
-      <p>🛍️ Your cart is empty</p>
+      <p>Your cart is empty</p>
     </div>
   <% } else { %>
     <div class="cart-items">
-      <% cart.forEach(item => { %>
+      <% cart.forEach((item, index) => { %>
         <div class="cart-item">
-          <span><%= item.name %> × <%= item.quantity %></span>
-          <strong>$<%= item.price * item.quantity %></strong>
+          <div style="flex:1;">
+            <span><%= item.displayName || item.name %> × <%= item.quantity %></span>
+            <select class="size-select" onchange="updateSize(<%= index %>, this.value)">
+              <option value="" <%= !item.size ? 'selected' : '' %>>Select Size</option>
+              <% for(let s=3; s<=12; s++) { %>
+                <option value="<%= s %>" <%= item.size == s ? 'selected' : '' %>>UK <%= s %></option>
+              <% } %>
+            </select>
+          </div>
+
+          <strong>£<%= (item.price * item.quantity).toFixed(2) %></strong>
+
+          <!-- REMOVE ITEM -->
+          <form action="/remove-from-cart" method="POST" style="margin:0;">
+            <input type="hidden" name="index" value="<%= index %>">
+            <button type="submit" class="remove-btn">Remove</button>
+          </form>
         </div>
       <% }) %>
-      <div class="total">Total: $<%= total %></div>
+
+      <div class="total">Total: £<%= total.toFixed(2) %></div>
+
+      <!-- CLEAR ALL -->
+      <div style="text-align:center; margin-top:20px;">
+        <form action="/clear-cart" method="POST" style="display:inline;">
+          <button type="submit" class="clear-all" style="width:50%">Clear All</button>
+        </form>
+      </div>
     </div>
 
     <form action="/checkout" method="POST">
@@ -190,8 +250,25 @@ form button:hover{
     </form>
   <% } %>
 
-  <a class="back-link" href="/">← Continue Shopping</a>
+  <a class="back-link" href="/">Continue Shopping</a>
 </main>
+
+<script>
+function updateSize(index, size) {
+  fetch('/update-cart-size', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ index, size })
+  }).then(() => {
+    // Optional: refresh page or update display name
+    if (size) {
+      const nameSpan = document.querySelectorAll('.cart-item span')[index];
+      const originalName = nameSpan.textContent.split(' × ')[0];
+      nameSpan.textContent = `${originalName} (Size ${size}) × ${nameSpan.textContent.split(' × ')[1]}`;
+    }
+  });
+}
+</script>
 
 </body>
 </html>

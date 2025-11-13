@@ -7,10 +7,6 @@ dotenv.config();
 
 const app = express();
 
-// --- TEST EMAIL (remove later) ---
-const testEmailRoutes = require('./routes/test-email');
-app.use('/', testEmailRoutes);
-
 // --- MIDDLEWARE ---
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -53,8 +49,11 @@ async function loadEmailConfig() {
 loadEmailConfig();
 
 // --- PASS CONFIG TO ROUTES ---
-const storeRoutes = require('./routes/store')(getEmailConfig, app);
-const adminRoutes = require('./routes/admin')(getEmailConfig, app);
+const storeRoutesFactory = require('./routes/store');
+const adminRoutesFactory = require('./routes/admin');
+
+const storeRoutes = storeRoutesFactory(getEmailConfig, app);
+const adminRoutes = adminRoutesFactory(getEmailConfig, app);
 
 app.use('/', storeRoutes);
 app.use('/admin', adminRoutes);

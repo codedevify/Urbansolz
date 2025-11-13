@@ -350,7 +350,7 @@ footer{
   <!-- Desktop Search -->
   <div class="search-container">
     <div class="search-wrapper">
-      <input type="text" class="search-input" id="searchInput" placeholder="Search heels, sandals..." autocomplete="off">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search shoes, accessories..." autocomplete="off">
       <button class="search-btn">Search</button>
       <div class="search-dropdown" id="searchDropdown"></div>
     </div>
@@ -374,23 +374,23 @@ footer{
   <a onclick="scrollToSection('contact'); closeMobileMenu()">Contact</a>
   <a href="/cart">Cart (<%= (cart || []).reduce((s,i)=>s+i.quantity,0) %>)</a>
   <a href="/admin/login">Admin</a>
-  <input type="text" class="search-input" id="mobileSearch" placeholder="Search heels, sandals..." style="margin:1rem 0;padding:12px 15px;border-radius:30px;border:1px solid #ddd;">
+  <input type="text" class="search-input" id="mobileSearch" placeholder="Search shoes, accessories..." style="margin:1rem 0;padding:12px 15px;border-radius:30px;border:1px solid #ddd;">
 </div>
 
 <!-- HERO -->
 <section class="hero" id="hero">
   <div class="hero-content">
-    <h1>Step Into Elegance</h1>
-    <p>Urban Solz — where feminine style meets luxury. Discover handcrafted heels, sandals, and boots designed to make every step a statement.</p>
-    <button onclick="scrollToSection('products-section')">Shop Collection</button>
+    <h1>Step Into Style</h1>
+    <p>Urban Solz — casual footwear and accessories for everyday comfort and urban vibes.</p>
+    <аду button onclick="scrollToSection('products-section')">Shop Collection</button>
   </div>
 </section>
 
 <!-- PRODUCTS -->
 <section class="products-section" id="products-section">
   <h2>Our Collection</h2>
-  <p>Elevate your wardrobe with premium footwear that blends comfort, sophistication, and urban femininity.</p>
-  <div id="noResults" class="no-results">No shoes found matching your search.</div>
+  <p>Discover comfy casual shoes and stylish accessories for your daily adventures.</p>
+  <div id="noResults" class="no-results">No items found matching your search.</div>
   <div class="product-grid" id="productGrid">
     <% products.forEach(p => { %>
       <div class="product-card"
@@ -403,7 +403,7 @@ footer{
         <div class="product-info">
           <h3><%= p.name %></h3>
           <p><%= p.description %></p>
-          <strong>$<%= p.price %></strong>
+          <strong>£<%= p.price %></strong>
           <form action="/add-to-cart/<%= p._id %>" method="POST">
             <button type="submit">Add to Cart</button>
           </form>
@@ -416,15 +416,15 @@ footer{
 <!-- ABOUT (BOTTOM) -->
 <section class="bottom-section" id="about">
   <h2>About Urban Solz</h2>
-  <p>We craft luxury footwear for the modern woman. Every pair is designed with passion, precision, and a touch of urban elegance — because you deserve to walk with confidence.</p>
+  <p>We bring you comfy casual footwear and accessories for everyday style. No fuss, just comfort and cool.</p>
   <p><a href="#">Learn More</a></p>
 </section>
 
 <!-- CONTACT (BOTTOM) -->
 <section class="bottom-section" id="contact" style="background:#fff;">
-  <h2>Get inthe Touch</h2>
-  <p>We’d love to hear from you. Whether it’s a question, feedback, or styling advice — we’re here.</p>
-  <p>Email: <a href="mailto:support@urbansolz.com">support@urbansolz.com</a> | Tel: <a href="tel:+447356081778">+44 7356 081778</a></p>
+  <h2>Get in Touch</h2>
+  <p>We’d love to hear from you. Questions? Feedback? We’re here.</p>
+  <p>Email: <a href="mailto:urbansole2025@hotmail.com">urbansole2025@hotmail.com</a> | Tel: <a href="tel:+447356081778">+44 7356 081778</a></p>
 </section>
 
 <!-- MODAL -->
@@ -448,20 +448,18 @@ footer{
   <div class="footer-grid">
     <div class="footer-col">
       <h4>Urban Solz</h4>
-      <p>Luxury women’s footwear. Designed for confidence, crafted for elegance.</p>
+      <p>Casual footwear and accessories. Everyday comfort, urban style.</p>
     </div>
     <div class="footer-col">
       <h4>Shop</h4>
-      <a onclick="scrollToSection('products-section')">Heels</a>
-      <a onclick="scrollToSection('products-section')">Sandals</a>
-      <a onclick="scrollToSection('products-section')">Boots</a>
+      <a onclick="scrollToSection('products-section')">Shoes</a>
+      <a onclick="scrollToSection('products-section')">Accessories</a>
       <a onclick="scrollToSection('products-section')">New Arrivals</a>
     </div>
     <div class="footer-col">
       <h4>Support</h4>
       <a onclick="scrollToSection('contact')">Contact Us</a>
       <a href="/#">Shipping & Returns</a>
-      <a href="/#Guide</a>
       <a href="/#">Privacy Policy</a>
     </div>
     <div class="footer-col">
@@ -470,7 +468,7 @@ footer{
         <a href="https://instagram.com/urban_solz" target="_blank">Instagram</a>
         <a href="https://tiktok.com" target="_blank">TikTok</a>
         <a href="#" target="_blank">Pinterest</a>
-        <a href="https://facebook.comUrban Solz" target="_blank">Facebook</a>
+        <a href="https://facebook.com/UrbanSolz" target="_blank">Facebook</a>
       </div>
     </div>
   </div>
