@@ -218,7 +218,7 @@
             <span><%= item.displayName || item.name %> × <%= item.quantity %></span>
             <select class="size-select" onchange="updateSize(<%= index %>, this.value)">
               <option value="" <%= !item.size ? 'selected' : '' %>>Select Size</option>
-              <% for(let s=3; s<=12; s++) { %>
+              <% for(let s=3; s<=8; s++) { %>
                 <option value="<%= s %>" <%= item.size == s ? 'selected' : '' %>>UK <%= s %></option>
               <% } %>
             </select>
