@@ -81,12 +81,6 @@
     }
     .cart-item:last-child{border-bottom:none;}
     .cart-item strong{color:#3e2723;}
-    .size-select{
-      padding:6px 10px;
-      border:1px solid #ccc;
-      border-radius:8px;
-      font-size:0.9rem;
-    }
 
     /* === REMOVE BUTTON === */
     .remove-btn{
@@ -166,6 +160,26 @@
       transform:scale(1.05);
     }
 
+    /* === PAYPAL CONTAINER === */
+    #paypal-button-container {
+      margin-top: 20px;
+    }
+
+    /* === FALLBACK BUTTON === */
+    .paypal-fallback{
+      margin-top:20px;
+      width:100%;
+      padding:12px;
+      background:#ffb400;
+      color:#3e2723;
+      border:none;
+      border-radius:25px;
+      font-size:1rem;
+      font-weight:600;
+      cursor:not-allowed;
+      opacity:0.8;
+    }
+
     /* === EMPTY CART === */
     .empty{
       font-size:1.1rem;
@@ -216,12 +230,6 @@
         <div class="cart-item">
           <div style="flex:1;">
             <span><%= item.displayName || item.name %> × <%= item.quantity %></span>
-            <select class="size-select" onchange="updateSize(<%= index %>, this.value)">
-              <option value="" <%= !item.size ? 'selected' : '' %>>Select Size</option>
-              <% for(let s=3; s<=8; s++) { %>
-                <option value="<%= s %>" <%= item.size == s ? 'selected' : '' %>>UK <%= s %></option>
-              <% } %>
-            </select>
           </div>
 
           <strong>£<%= (item.price * item.quantity).toFixed(2) %></strong>
@@ -244,31 +252,73 @@
       </div>
     </div>
 
-    <form action="/checkout" method="POST">
-      <input type="email" name="email" placeholder="Your Email" required>
-      <button>Pay with Stripe</button>
+    <!-- Stripe Checkout -->
+    <form action="/checkout" method="POST" id="stripeForm">
+      <input type="email" name="email" id="emailInput" placeholder="Your Email" required>
+      <button type="submit">Pay with Stripe</button>
     </form>
+
+    <!-- PayPal Checkout -->
+    <% if (paypalClientId && paypalClientId.trim() !== '') { %>
+      <div id="paypal-button-container"></div>
+
+      <script src="https://www.paypal.com/sdk/js?client-id=<%= paypalClientId %>&currency=GBP"></script>
+      <script>
+        // Render PayPal buttons – if SDK fails, show fallback
+        function initPayPal() {
+          if (typeof paypal === 'undefined') {
+            document.getElementById('paypal-button-container').innerHTML =
+              '<button class="paypal-fallback" disabled>PayPal is down</button>';
+            return;
+          }
+
+          paypal.Buttons({
+            createOrder: function(data, actions) {
+              const email = document.getElementById('emailInput').value.trim();
+              if (!email) {
+                alert('Please enter your email address.');
+                return;
+              }
+              return fetch('/create-paypal-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+              })
+              .then(res => res.json())
+              .then(order => order.id);
+            },
+            onApprove: function(data, actions) {
+              return fetch('/capture-paypal-order/' + data.orderID, {
+                method: 'POST'
+              })
+              .then(res => res.json())
+              .then(details => {
+                alert('Transaction completed by ' + details.payer.name.given_name);
+                window.location.href = '/success';
+              });
+            },
+            onError: function(err) {
+              console.error(err);
+              alert('PayPal payment failed. Check console for details.');
+            }
+          }).render('#paypal-button-container')
+          .catch(err => {
+            console.error('PayPal render error:', err);
+            document.getElementById('paypal-button-container').innerHTML =
+              '<button class="paypal-fallback" disabled>PayPal is down</button>';
+          });
+        }
+
+        // Start init after a short delay to be sure SDK is loaded
+        setTimeout(initPayPal, 500);
+      </script>
+    <% } else { %>
+      <p style="margin-top:20px; color:#a1887f;">PayPal not configured.</p>
+    <% } %>
   <% } %>
 
   <a class="back-link" href="/">Continue Shopping</a>
 </main>
-
-<script>
-function updateSize(index, size) {
-  fetch('/update-cart-size', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ index, size })
-  }).then(() => {
-    // Optional: refresh page or update display name
-    if (size) {
-      const nameSpan = document.querySelectorAll('.cart-item span')[index];
-      const originalName = nameSpan.textContent.split(' × ')[0];
-      nameSpan.textContent = `${originalName} (Size ${size}) × ${nameSpan.textContent.split(' × ')[1]}`;
-    }
-  });
-}
-</script>
 
 </body>
 </html>

@@ -5,7 +5,8 @@ const orderSchema = new mongoose.Schema({
   total: Number,
   email: String,
   status: { type: String, default: 'Pending' },
-  stripeSessionId: String
+  stripeSessionId: String,
+  paypalOrderId: String
 });
 
 module.exports = mongoose.model('Order', orderSchema);

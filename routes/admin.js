@@ -1,4 +1,3 @@
-// routes/admin.js
 const multer = require('multer');
 const path = require('path');
 
@@ -45,6 +44,13 @@ module.exports = function(getEmailConfig, app) {
       console.error(err);
       res.status(500).send('Server error');
     }
+  });
+
+  // === LOGOUT ===
+  router.post('/logout', (req, res) => {
+    req.session.destroy(() => {
+      res.redirect('/admin/login');
+    });
   });
 
   // === DASHBOARD ===
@@ -226,13 +232,15 @@ module.exports = function(getEmailConfig, app) {
     res.redirect('/admin');
   });
 
-  // === STRIPE KEYS ===
+  // === PAYMENT KEYS ===
   router.post('/config', isAdmin, async (req, res) => {
     await Config.updateOne(
       {},
       {
         stripePublishableKey: req.body.pk,
-        stripeSecretKey: req.body.sk
+        stripeSecretKey: req.body.sk,
+        paypalClientId: req.body.clientId,
+        paypalSecret: req.body.secret
       },
       { upsert: true }
     );

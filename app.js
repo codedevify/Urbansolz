@@ -81,12 +81,14 @@ async function seedData() {
       console.log('8 Products Seeded with placeholder images');
     }
 
+    // REMOVED EMPTY PAYPAL SEED — LET ADMIN SAVE IT
     if (await Config.countDocuments() === 0) {
       await new Config({
         stripePublishableKey: 'pk_test_xxx',
         stripeSecretKey: 'sk_test_xxx'
+        // paypalClientId and paypalSecret are NOT seeded
       }).save();
-      console.log('Stripe Config Seeded');
+      console.log('Payment Config Seeded (PayPal keys must be set in admin)');
     }
   } catch (e) {
     console.error('Seed error:', e);

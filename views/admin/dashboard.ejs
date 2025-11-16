@@ -183,10 +183,12 @@
   </div>
 
   <section>
-    <h2>Stripe Keys</h2>
+    <h2>Payment Keys</h2>
     <form action="/admin/config" method="POST">
-      <input type="text" name="pk" value="<%= config.stripePublishableKey || '' %>" placeholder="pk_test_..." required>
-      <input type="text" name="sk" value="<%= config.stripeSecretKey || '' %>" placeholder="sk_test_..." required>
+      <input type="text" name="pk" value="<%= config.stripePublishableKey || '' %>" placeholder="Stripe pk_test_..." required>
+      <input type="text" name="sk" value="<%= config.stripeSecretKey || '' %>" placeholder="Stripe sk_test_..." required>
+      <input type="text" name="clientId" value="<%= config.paypalClientId || '' %>" placeholder="PayPal Client ID" required>
+      <input type="text" name="secret" value="<%= config.paypalSecret || '' %>" placeholder="PayPal Secret" required>
       <button>Save Keys</button>
     </form>
   </section>
