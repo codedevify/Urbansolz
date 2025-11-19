@@ -145,7 +145,8 @@ module.exports = function(getEmailConfig, app) {
         name: req.body.name,
         description: req.body.desc,
         price: req.body.price,
-        image: imageUrl
+        image: imageUrl,
+        category: req.body.category || 'shoe'  // new field
       });
       await product.save();
       res.redirect('/admin');
@@ -164,7 +165,8 @@ module.exports = function(getEmailConfig, app) {
       const update = {
         name: req.body.name,
         description: req.body.desc,
-        price: req.body.price
+        price: req.body.price,
+        category: req.body.category || 'shoe'  // new field
       };
 
       if (req.file) {

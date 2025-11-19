@@ -8,15 +8,21 @@ const Config = require('../models/Config');
 module.exports = function(getEmailConfig, app) {
   const router = require('express').Router();
 
-  let transporter;
-  function createTransporter() {
-    const cfg = getEmailConfig();
-    transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user: cfg.emailUser, pass: cfg.emailPass }
-    });
-  }
-  createTransporter();
+
+let transporter = null;
+
+function createTransporter() {
+  const cfg = getEmailConfig();
+  transporter = nodemailer.createTransport({   // ← capital T here
+    service: 'gmail',
+    auth: { user: cfg.emailUser, pass: cfg.emailPass }
+  });
+}
+createTransporter();   // this calls the function and creates the transporter
+
+
+
+
 
   router.createTransporter = createTransporter;
 
@@ -40,34 +46,48 @@ module.exports = function(getEmailConfig, app) {
     }
   });
 
-  // Add to Cart
+  // ==================== ADD TO CART - FULLY UPDATED FOR CATEGORY ====================
   router.post('/add-to-cart/:id', async (req, res) => {
     try {
       const product = await Product.findById(req.params.id);
       if (!product) return res.status(404).send('Product not found');
 
       if (!req.session.cart) req.session.cart = [];
-      const existing = req.session.cart.find(i => i.id === req.params.id && i.size === req.body.size);
+
+      // Determine if size is required based on category
+      const isHat = product.category === 'hat';
+      const submittedSize = req.body.size?.trim();
+
+      // Validation: Shoes require a size, hats do not
+      if (!isHat && !submittedSize) {
+        return res.status(400).send('Please select a size for shoes.');
+      }
+
+      const size = isHat ? null : submittedSize;
+      const displayName = isHat ? product.name : `${product.name} (Size ${size})`;
+
+      // Find existing item with same product ID and same size (only relevant for shoes)
+      const existing = req.session.cart.find(i => 
+        i.id === req.params.id && 
+        i.size === size
+      );
+
       if (existing) {
         existing.quantity += 1;
       } else {
-        const size = req.body.size;
-        let displayName;
-        if (size) {
-          displayName = `${product.name} (Size ${size})`;
-        }
         req.session.cart.push({ 
           id: product._id.toString(), 
           name: product.name, 
           price: product.price, 
           quantity: 1,
-          size: size || null,
-          displayName
+          size: size,
+          displayName: displayName
         });
       }
+
       res.redirect('/');
     } catch (err) {
-      console.error(err);
+      console.error('Add to cart error:', err);
       res.status(500).send('Server Error');
     }
   });
@@ -92,7 +112,7 @@ module.exports = function(getEmailConfig, app) {
     const cart = req.session.cart || [];
     const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
     const config = await Config.findOne();
-    const paypalClientId = config?.paypalClientId || ''; // ← FIXED LINE
+    const paypalClientId = config?.paypalClientId || '';
     res.render('cart', { cart, total, paypalClientId });
   });
 

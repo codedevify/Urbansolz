@@ -82,6 +82,16 @@
     .cart-item:last-child{border-bottom:none;}
     .cart-item strong{color:#3e2723;}
 
+    /* Size badge – only shown when size exists */
+    .size-badge{
+      background:#3e2723;
+      color:#fff;
+      padding:4px 10px;
+      border-radius:12px;
+      font-size:0.8rem;
+      margin-left:8px;
+    }
+
     /* === REMOVE BUTTON === */
     .remove-btn{
       background:#d32f2f;
@@ -229,7 +239,11 @@
       <% cart.forEach((item, index) => { %>
         <div class="cart-item">
           <div style="flex:1;">
-            <span><%= item.displayName || item.name %> × <%= item.quantity %></span>
+            <span><%= item.displayName || item.name %></span>
+            <% if (item.size) { %>
+              <span class="size-badge">Size <%= item.size %></span>
+            <% } %>
+            <span>× <%= item.quantity %></span>
           </div>
 
           <strong>£<%= (item.price * item.quantity).toFixed(2) %></strong>
@@ -264,7 +278,6 @@
 
       <script src="https://www.paypal.com/sdk/js?client-id=<%= paypalClientId %>&currency=GBP"></script>
       <script>
-        // Render PayPal buttons – if SDK fails, show fallback
         function initPayPal() {
           if (typeof paypal === 'undefined') {
             document.getElementById('paypal-button-container').innerHTML =
@@ -309,7 +322,6 @@
           });
         }
 
-        // Start init after a short delay to be sure SDK is loaded
         setTimeout(initPayPal, 500);
       </script>
     <% } else { %>

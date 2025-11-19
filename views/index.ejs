@@ -172,7 +172,7 @@ section{padding-top:80px;}
   display:none;
 }
 
-/* Fixed height cards + ellipsis + visible button */
+/* Product Grid */
 .product-grid{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:2rem;max-width:1400px;margin:0 auto;
@@ -185,20 +185,24 @@ section{padding-top:80px;}
   box-shadow:0 8px 25px rgba(0,0,0,.06);
   opacity:0;transform:translateY(30px);
   transition:all .6s ease;cursor:pointer;
-  height:360px;display:flex;flex-direction:column;
-}
-@media(max-width:640px){
-  .product-card{height:380px !important;}
+  height:380px;display:flex;flex-direction:column;
 }
 .product-card.visible{opacity:1;transform:translateY(0);}
 .product-card:hover{
   transform:translateY(-8px);box-shadow:0 16px 35px rgba(0,0,0,.12);
 }
+
+/* FULL IMAGE - NO CROPPING */
 .product-card img{
-  width:100%;height:160px;object-fit:cover;
+  width:100%;
+  height:180px;
+  object-fit:contain;
+  background:#f8f8f8;
+  padding:15px;
   transition:transform .5s;
 }
-.product-card:hover img{transform:scale(1.06);}
+.product-card:hover img{transform:scale(1.05);}
+
 .product-info{
   padding:1rem;text-align:center;flex-grow:1;display:flex;flex-direction:column;
 }
@@ -237,53 +241,64 @@ section{padding-top:80px;}
   color:#a1887f;font-weight:600;
 }
 
-/* ==== MODAL ==== */
+/* ==== MODAL - PERFECTLY CENTERED + FULL IMAGE ==== */
 .modal{
   display:none;position:fixed;top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.75);z-index:2000;align-items:center;justify-content:center;
   padding:2rem;overflow-y:auto;
 }
 .modal.active{display:flex;}
 .modal-content{
-  background:#fff;max-width:600px;width:100%;max-height:88vh;
-  border-radius:20px;overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.3);
+  background:#fff;max-width:560px;width:100%;border-radius:24px;
+  overflow:hidden;box-shadow:0 25px 70px rgba(0,0,0,.4);
   animation:modalFade .4s ease;
-  display:flex;flex-direction:column;
 }
-@keyframes modalFade{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);}}
+@keyframes modalFade{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
+
 .modal-img img{
-  width:100%;height:260px;object-fit:cover;
+  width:100%;
+  height:320px;
+  object-fit:contain;
+  background:#faf9f7;
+  padding:20px;
 }
+
 .modal-body{
-  padding:1.8rem;text-align:center;flex-grow:1;
+  padding:2.5rem 2rem;text-align:center;
 }
 .modal-body h3{
-  font-size:1.8rem;margin-bottom:.6rem;color:#2d1e12;
+  font-size:2rem;margin:0.5rem 0 0.8rem;color:#2d1e12;
 }
 .modal-body p{
-  font-size:.95rem;color:#5d4037;margin-bottom:1rem;line-height:1.6;
+  font-size:1.05rem;color:#5d4037;margin-bottom:1.4rem;line-height:1.6;
+  padding:0 1rem;
 }
 .modal-body strong{
-  display:block;font-size:1.5rem;margin-bottom:1.2rem;color:#2d1e12;
+  display:block;font-size:1.8rem;margin:1.4rem 0 1.8rem;color:#2d1e12;
 }
-.modal-body select{
-  width:100%;padding:10px;margin-bottom:1rem;border:1px solid #ddd;border-radius:8px;
+#sizeContainer{
+  margin:1.5rem 0;
+}
+#sizeContainer select{
+  width:80%;padding:15px;margin:0 auto;display:block;
+  border:1px solid #ddd;border-radius:12px;font-size:1.1rem;
+  background:#fff;
 }
 .modal-body button{
   background:#2d1e12;color:#fff;border:none;
-  padding:11px 32px;border-radius:50px;font-size:.95rem;
-  cursor:pointer;transition:all .3s;
+  padding:15px 40px;border-radius:50px;font-size:1.1rem;
+  font-weight:600;cursor:pointer;transition:all .3s;
+  min-width:220px;
 }
 .modal-body button:hover{
-  background:#a1887f;transform:scale(1.05);
+  background:#a1887f;transform:scale(1.06);
 }
 .modal-close{
-  position:absolute;top:1rem;right:1rem;
-  background:none;border:none;font-size:1.8rem;
+  position:absolute;top:14px;right:18px;
+  background:none;border:none;font-size:2rem;
   color:#999;cursor:pointer;transition:color .3s;z-index:10;
 }
-.modal-close:hover{color:#2d1e12;}
+.modal-close:hover{color:#000;}
 
 /* ==== FOOTER ==== */
 footer{
@@ -398,13 +413,13 @@ footer{
            data-desc="<%= p.description.toLowerCase() %>"
            data-id="<%= p._id %>"
            data-img="<%= p.image %>"
-           data-price="<%= p.price %>">
+           data-price="<%= p.price %>"
+           data-category="<%= p.category || 'shoe' %>">
         <img src="<%= p.image %>" alt="<%= p.name %>">
         <div class="product-info">
           <h3><%= p.name %></h3>
           <p><%= p.description %></p>
           <strong>£<%= p.price %></strong>
-          <!-- Add to Cart button now opens the modal -->
           <button class="add-btn" data-id="<%= p._id %>">Add to Cart</button>
         </div>
       </div>
@@ -423,7 +438,7 @@ footer{
 <section class="bottom-section" id="contact" style="background:#fff;">
   <h2>Get in Touch</h2>
   <p>We’d love to hear from you. Questions? Feedback? We’re here.</p>
-  <p>Email: <a href="mailto:urbansole2025@hotmail.com">urbansole2025@hotmail.com</a> | <a href="https://wa.me/447356081778" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;color:#25D366;font-weight:600;text-decoration:none;gap:6px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="18" height="18" fill="currentColor" style="flex-shrink:0;"><path d="M476.9 161.1C435 119.1 379.2 96 319.9 96C197.5 96 97.9 195.6 97.9 318C97.9 357.1 108.1 395.3 127.5 429L96 544L213.7 513.1C246.1 530.8 282.6 540.1 319.8 540.1L319.9 540.1C442.2 540.1 544 440.5 544 318.1C544 258.8 518.8 203.1 476.9 161.1zM319.9 502.7C286.7 502.7 254.2 493.8 225.9 477L219.2 473L149.4 491.3L168 423.2L163.6 416.2C145.1 386.8 135.4 352.9 135.4 318C135.4 216.3 218.2 133.5 320 133.5C369.3 133.5 415.6 152.7 450.4 187.6C485.2 222.5 506.6 268.8 506.5 318.1C506.5 419.9 421.6 502.7 319.9 502.7zM421.1 364.5C415.6 361.7 388.3 348.3 383.2 346.5C378.1 344.6 374.4 343.7 370.7 349.3C367 354.9 356.4 367.3 353.1 371.1C349.9 374.8 346.6 375.3 341.1 372.5C308.5 356.2 287.1 343.4 265.6 306.5C259.9 296.7 271.3 297.4 281.9 276.2C283.7 272.5 282.8 269.3 281.4 266.5C280 263.7 268.9 236.4 264.3 225.3C259.8 214.5 255.2 216 251.8 215.8C248.6 215.6 244.9 215.6 241.2 215.6C237.5 215.6 231.5 217 226.4 222.5C221.3 228.1 207 241.5 207 268.8C207 296.1 226.9 322.5 229.6 326.2C232.4 329.9 268.7 385.9 324.4 410C359.6 425.2 373.4 426.5 391 423.9C401.7 422.3 423.8 410.5 428.4 397.5C433 384.5 433 373.4 431.6 371.1C430.3 368.6 426.6 367.2 421.1 364.5z"/></svg>+44 7356 081778</a></p>
+  <p>Email: <a href="mailto:urbansole2025@hotmail.com">urbansole2025@hotmail.com</a> | WhatsApp: +44 7356 081778</p>
 </section>
 
 <!-- MODAL -->
@@ -435,13 +450,16 @@ footer{
       <h3 id="modalName"></h3>
       <p id="modalDesc"></p>
       <strong id="modalPrice"></strong>
+
       <form id="modalForm" action="" method="POST">
-        <select name="size" required>
-          <option value="">Select Size</option>
-          <% for(let s=3; s<=8; s++) { %>
-            <option value="<%= s %>">UK <%= s %></option>
-          <% } %>
-        </select>
+        <div id="sizeContainer">
+          <select name="size">
+            <option value="">Select Size</option>
+            <% for(let s=3; s<=8; s++) { %> <!-- UK 3–8 only -->
+              <option value="<%= s %>">UK <%= s %></option>
+            <% } %>
+          </select>
+        </div>
         <button type="submit">Add to Cart</button>
       </form>
     </div>
@@ -458,7 +476,7 @@ footer{
     <div class="footer-col">
       <h4>Shop</h4>
       <a onclick="scrollToSection('products-section')">Shoes</a>
-      <a onclick="scrollToSection('products-section')">Accessories</a>
+      <a onclick="scrollToSection('products-section')">Hats</a>
       <a onclick="scrollToSection('products-section')">New Arrivals</a>
     </div>
     <div class="footer-col">
@@ -589,6 +607,8 @@ const modalName = document.getElementById('modalName');
 const modalDesc = document.getElementById('modalDesc');
 const modalPrice = document.getElementById('modalPrice');
 const modalForm = document.getElementById('modalForm');
+const sizeContainer = document.getElementById('sizeContainer');
+const sizeSelect = sizeContainer.querySelector('select');
 
 function openModal(card) {
   modalImg.src = card.dataset.img;
@@ -596,23 +616,37 @@ function openModal(card) {
   modalDesc.textContent = card.querySelector('p').textContent;
   modalPrice.textContent = card.querySelector('strong').textContent;
   modalForm.action = `/add-to-cart/${card.dataset.id}`;
+
+  const category = card.dataset.category || 'shoe';
+
+  if (category === 'hat') {
+    sizeContainer.style.display = 'none';
+    sizeSelect.removeAttribute('required');
+    sizeSelect.value = '';
+  } else {
+    sizeContainer.style.display = 'block';
+    sizeSelect.setAttribute('required', 'required');
+  }
+
   modal.classList.add('active');
   document.body.style.overflow = 'hidden';
 }
 
-/* Open modal when whole card is clicked */
+function closeModal() {
+  modal.classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
 document.querySelectorAll('.product-card').forEach(card => {
   card.addEventListener('click', (e) => {
-    // ignore clicks on the button itself – it will be handled below
     if (e.target.classList.contains('add-btn')) return;
     openModal(card);
   });
 });
 
-/* Open modal when Add to Cart button is clicked */
 document.querySelectorAll('.add-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
-    e.stopPropagation();               // prevent card click
+    e.stopPropagation();
     const card = btn.closest('.product-card');
     openModal(card);
   });
@@ -620,14 +654,7 @@ document.querySelectorAll('.add-btn').forEach(btn => {
 
 modalClose.addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-window.addEventListener('scroll', () => { if (modal.classList.contains('active')) closeModal(); });
 
-function closeModal() {
-  modal.classList.remove('active');
-  document.body.style.overflow = 'auto';
-}
-
-/* Search dropdown click opens modal */
 dropdown.addEventListener('click', (e) => {
   const item = e.target.closest('.search-item');
   if (item) {
