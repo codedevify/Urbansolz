@@ -4,7 +4,6 @@ const path = require('path');
 module.exports = function(getEmailConfig, app) {
   const cloudinary = require('cloudinary').v2;
 
-  // Configure Cloudinary INSIDE factory — after dotenv is loaded
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -81,11 +80,48 @@ module.exports = function(getEmailConfig, app) {
         orders: populatedOrders, 
         products, 
         config: config || {}, 
-        emailConfig: emailConfig || {} 
+        emailConfig: emailConfig || {},
+        message: req.query.msg || null  // for success messages
       });
     } catch (err) {
       console.error('Dashboard error:', err);
       res.status(500).send('Server error');
+    }
+  });
+
+  // === CHANGE ADMIN PASSWORD ===
+  router.post('/change-password', isAdmin, async (req, res) => {
+    try {
+      const { oldPassword, newPassword, confirmPassword } = req.body;
+
+      if (newPassword !== confirmPassword) {
+        return res.redirect('/admin?msg=New passwords do not match');
+      }
+      if (newPassword.length < 6) {
+        return res.redirect('/admin?msg=New password must be at least 6 characters');
+      }
+
+      const admin = await Admin.findOne({});
+      if (!admin || admin.password !== oldPassword) {
+        return res.redirect('/admin?msg=Old password is incorrect');
+      }
+
+      await Admin.updateOne({}, { password: newPassword });
+      res.redirect('/admin?msg=Password changed successfully');
+    } catch (err) {
+      console.error(err);
+      res.redirect('/admin?msg=Error changing password');
+    }
+  });
+
+  // === CLEAR ALL ORDERS ===
+  router.post('/clear-all-orders', isAdmin, async (req, res) => {
+    try {
+      await Order.deleteMany({});
+      res.redirect('/admin?msg=All orders cleared');
+    } catch (err) {
+      console.error('Clear orders error:', err);
+      res.redirect('/admin?msg=Failed to clear orders');
     }
   });
 
@@ -119,17 +155,14 @@ module.exports = function(getEmailConfig, app) {
 
   // === ADD PRODUCT ===
   router.post('/product/add', isAdmin, upload.single('image'), async (req, res) => {
+    // ... (unchanged - kept exactly as before)
     let imageUrl = '';
-
     if (req.file) {
       try {
         const result = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
             { resource_type: 'image' },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
+            (error, result) => error ? reject(error) : resolve(result)
           );
           uploadStream.end(req.file.buffer);
         });
@@ -146,7 +179,7 @@ module.exports = function(getEmailConfig, app) {
         description: req.body.desc,
         price: req.body.price,
         image: imageUrl,
-        category: req.body.category || 'shoe'  // new field
+        category: req.body.category || 'shoe'
       });
       await product.save();
       res.redirect('/admin');
@@ -158,6 +191,7 @@ module.exports = function(getEmailConfig, app) {
 
   // === EDIT PRODUCT ===
   router.post('/product/edit/:id', isAdmin, upload.single('image'), async (req, res) => {
+    // ... (unchanged - kept exactly as before)
     try {
       const product = await Product.findById(req.params.id);
       if (!product) return res.status(404).send('Product not found');
@@ -166,26 +200,18 @@ module.exports = function(getEmailConfig, app) {
         name: req.body.name,
         description: req.body.desc,
         price: req.body.price,
-        category: req.body.category || 'shoe'  // new field
+        category: req.body.category || 'shoe'
       };
 
       if (req.file) {
         if (product.image && product.image.startsWith('https://res.cloudinary.com/')) {
           const publicId = product.image.split('/').pop().split('.')[0];
-          try {
-            await cloudinary.uploader.destroy(publicId);
-          } catch (err) {
-            console.warn('Failed to delete old image:', err);
-          }
+          try { await cloudinary.uploader.destroy(publicId); } catch (err) { console.warn('Failed to delete old image:', err); }
         }
-
         const result = await new Promise((resolve, reject) => {
           const uploadStream = cloudinary.uploader.upload_stream(
             { resource_type: 'image' },
-            (error, result) => {
-              if (error) reject(error);
-              else resolve(result);
-            }
+            (error, result) => error ? reject(error) : resolve(result)
           );
           uploadStream.end(req.file.buffer);
         });
@@ -202,17 +228,14 @@ module.exports = function(getEmailConfig, app) {
 
   // === DELETE PRODUCT ===
   router.post('/product/delete/:id', isAdmin, async (req, res) => {
+    // ... (unchanged)
     try {
       const product = await Product.findById(req.params.id);
       if (!product) return res.status(404).send('Product not found');
 
       if (product.image && product.image.startsWith('https://res.cloudinary.com/')) {
         const publicId = product.image.split('/').pop().split('.')[0];
-        try {
-          await cloudinary.uploader.destroy(publicId);
-        } catch (err) {
-          console.warn('Failed to delete image from Cloudinary:', err);
-        }
+        try { await cloudinary.uploader.destroy(publicId); } catch (err) { console.warn('Failed to delete image:', err); }
       }
 
       await Product.findByIdAndDelete(req.params.id);

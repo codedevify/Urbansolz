@@ -386,7 +386,6 @@ footer{
     <a onclick="scrollToSection('about')">About</a>
     <a onclick="scrollToSection('contact')">Contact</a>
     <a href="/cart">Cart (<%= (cart || []).reduce((s,i)=>s+i.quantity,0) %>)</a>
-    <a href="/admin/login">Admin</a>
   </nav>
 
   <div class="search-container">
@@ -413,7 +412,7 @@ footer{
   <a onclick="scrollToSection('about'); closeMobileMenu()">About</a>
   <a onclick="scrollToSection('contact'); closeMobileMenu()">Contact</a>
   <a href="/cart">Cart (<%= (cart || []).reduce((s,i)=>s+i.quantity,0) %>)</a>
-  <a href="/admin/login">Admin</a>
+
   <input type="text" class="search-input" id="mobileSearch" placeholder="Search shoes, accessories..." style="margin:1rem 0;padding:12px 15px;border-radius:30px;border:1px solid #ddd;">
 </div>
 

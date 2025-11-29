@@ -34,37 +34,29 @@
       padding:1rem 5%;
       box-shadow:0 4px 12px rgba(0,0,0,.07);
     }
-    header h1{
-      font-size:1.5rem;font-weight:700;letter-spacing:.5px;
-    }
+    header h1{font-size:1.5rem;font-weight:700;letter-spacing:.5px;}
     header nav{display:flex;gap:1.5rem;align-items:center}
-    header nav a{
-      font-weight:500;color:#4e342e;
-    }
+    header nav a{font-weight:500;color:#4e342e;}
     header nav a:hover{color:#a1887f}
 
     /* -------------------------------------------------
        MAIN CONTAINER
     ------------------------------------------------- */
-    main{
-      max-width:1200px;margin:4rem auto;padding:0 5%;
-    }
-    main h1{
-      text-align:center;font-size:2.2rem;font-weight:800;margin-bottom:1.5rem;
-      letter-spacing:.5px;
-    }
-    .top-links{
-      text-align:center;margin-bottom:2.5rem;
-    }
+    main{max-width:1200px;margin:4rem auto;padding:0 5%;}
+    main h1{text-align:center;font-size:2.2rem;font-weight:800;margin-bottom:1.5rem;letter-spacing:.5px;}
+    .top-links{text-align:center;margin-bottom:2.5rem;}
     .top-links a{
       display:inline-block;margin:0 .5rem;
       background:#3e2723;color:#fff;padding:.65rem 1.4rem;
       border-radius:2rem;font-weight:600;font-size:.95rem;
       transition:background .3s,transform .2s;
     }
-    .top-links a:hover{
-      background:#a1887f;color:#3e2723;transform:translateY(-2px);
-    }
+    .top-links a:hover{background:#a1887f;color:#3e2723;transform:translateY(-2px);}
+
+    /* Message Alert */
+    .alert{margin:1rem 0;padding:1rem;background:#fff;border-radius:1rem;box-shadow:0 4px 15px rgba(0,0,0,.1);text-align:center;font-weight:600;}
+    .alert.success{color:#2e7d32;}
+    .alert.error{color:#c62828;}
 
     /* -------------------------------------------------
        SECTION HEADERS
@@ -86,6 +78,7 @@
     }
     form:hover{transform:translateY(-4px);}
     form input[type=text],
+    form input[type=password],
     form input[type=number],
     form input[type=file],
     form select{
@@ -107,6 +100,8 @@
     form button:hover{
       background:#a1887f;color:#3e2723;transform:scale(1.04);
     }
+    .danger-btn{background:#d32f2f !important;}
+    .danger-btn:hover{background:#b71c1c !important;}
 
     /* -------------------------------------------------
        ORDER LIST
@@ -184,6 +179,32 @@
     <a href="/admin/email-settings">Email Settings</a>
     <a href="/admin/login?logout=1">Logout</a>
   </div>
+
+  <!-- Success / Error Message -->
+  <% if (message) { %>
+    <div class="alert <%= message.includes('successfully') || message.includes('cleared') ? 'success' : 'error' %>">
+      <%= message %>
+    </div>
+  <% } %>
+
+  <!-- CHANGE ADMIN PASSWORD -->
+  <section>
+    <h2>Change Admin Password</h2>
+    <form action="/admin/change-password" method="POST">
+      <input type="password" name="oldPassword" placeholder="Current Password" required>
+      <input type="password" name="newPassword" placeholder="New Password" required minlength="6">
+      <input type="password" name="confirmPassword" placeholder="Confirm New Password" required minlength="6">
+      <button type="submit">Change Password</button>
+    </form>
+  </section>
+
+  <!-- CLEAR ALL ORDERS -->
+  <section>
+    <h2>Danger Zone</h2>
+    <form action="/admin/clear-all-orders" method="POST" onsubmit="return confirm('⚠️ Are you ABSOLUTELY sure you want to delete ALL orders? This cannot be undone.');">
+      <button type="submit" class="danger-btn">Delete All Orders Permanently</button>
+    </form>
+  </section>
 
   <section>
     <h2>Payment Keys</h2>

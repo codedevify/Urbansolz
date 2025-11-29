@@ -82,7 +82,7 @@
     .cart-item:last-child{border-bottom:none;}
     .cart-item strong{color:#3e2723;}
 
-    /* Size badge – only shown when size exists */
+    /* Size badge */
     .size-badge{
       background:#3e2723;
       color:#fff;
@@ -119,13 +119,25 @@
     }
     .clear-all:hover{background:#b71c1c;}
 
-    /* === TOTAL === */
-    .total{
-      font-size:1.2rem;
+    /* === TOTALS BREAKDOWN === */
+    .totals-breakdown{
+      margin-top:20px;
+      padding-top:15px;
+      border-top:2px dashed #d1c4b8;
+      font-size:1rem;
+    }
+    .totals-breakdown div{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:8px;
+    }
+    .totals-breakdown .final-total{
+      font-size:1.4rem;
       font-weight:700;
-      text-align:right;
-      margin-top:15px;
       color:#3e2723;
+      padding-top:10px;
+      border-top:2px solid #3e2723;
+      margin-top:10px;
     }
 
     /* === CHECKOUT FORM === */
@@ -175,7 +187,6 @@
       margin-top: 20px;
     }
 
-    /* === FALLBACK BUTTON === */
     .paypal-fallback{
       margin-top:20px;
       width:100%;
@@ -190,7 +201,6 @@
       opacity:0.8;
     }
 
-    /* === EMPTY CART === */
     .empty{
       font-size:1.1rem;
       color:#4e342e;
@@ -200,7 +210,6 @@
       box-shadow:0 8px 25px rgba(0,0,0,0.08);
     }
 
-    /* === BACK LINK === */
     .back-link{
       display:inline-block;
       margin-top:30px;
@@ -211,12 +220,11 @@
     }
     .back-link:hover{color:#a1887f}
 
-    /* === RESPONSIVE === */
     @media(max-width:600px){
       main{margin:60px auto;}
       main h1{font-size:1.7rem;}
       .cart-item{flex-direction:column;align-items:flex-start;}
-      .total{text-align:left;}
+      .totals-breakdown .final-total{font-size:1.25rem;}
     }
   </style>
 </head>
@@ -248,7 +256,6 @@
 
           <strong>£<%= (item.price * item.quantity).toFixed(2) %></strong>
 
-          <!-- REMOVE ITEM -->
           <form action="/remove-from-cart" method="POST" style="margin:0;">
             <input type="hidden" name="index" value="<%= index %>">
             <button type="submit" class="remove-btn">Remove</button>
@@ -256,7 +263,21 @@
         </div>
       <% }) %>
 
-      <div class="total">Total: £<%= total.toFixed(2) %></div>
+      <!-- TOTALS BREAKDOWN -->
+      <div class="totals-breakdown">
+        <div>
+          <span>Subtotal</span>
+          <span>£<%= total.toFixed(2) %></span>
+        </div>
+        <div>
+          <span>Shipping (UK Standard)</span>
+          <span>£3.99</span>
+        </div>
+        <div class="final-total">
+          <span>Total to Pay</span>
+          <span>£<%= (total + 3.99).toFixed(2) %></span>
+        </div>
+      </div>
 
       <!-- CLEAR ALL -->
       <div style="text-align:center; margin-top:20px;">
@@ -269,7 +290,7 @@
     <!-- Stripe Checkout -->
     <form action="/checkout" method="POST" id="stripeForm">
       <input type="email" name="email" id="emailInput" placeholder="Your Email" required>
-      <button type="submit">Pay with Stripe</button>
+      <button type="submit">Pay with Stripe – £<%= (total + 3.99).toFixed(2) %></button>
     </form>
 
     <!-- PayPal Checkout -->
@@ -306,13 +327,13 @@
               })
               .then(res => res.json())
               .then(details => {
-                alert('Transaction completed by ' + details.payer.name.given_name);
+                alert('Transaction completed!');
                 window.location.href = '/success';
               });
             },
             onError: function(err) {
               console.error(err);
-              alert('PayPal payment failed. Check console for details.');
+              alert('PayPal payment failed.');
             }
           }).render('#paypal-button-container')
           .catch(err => {
