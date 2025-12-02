@@ -9,11 +9,13 @@ const app = express();
 
 // --- MIDDLEWARE ---
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json()); // Important: needed for PayPal webhook-like calls
 app.use(express.static('public'));
 app.use(session({
   secret: 'shoe-store-secret',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
 }));
 app.set('view engine', 'ejs');
 
@@ -29,7 +31,8 @@ const Config = require('./models/Config');
 const Admin = require('./models/Admin');
 const EmailConfig = require('./models/EmailConfig');
 
-// --- GLOBAL EMAIL CONFIG ---
+// --- GLOBAL EMAIL CONFIG (kept for admin panel only) ---
+// We no longer use a global transporter – emails are sent with fresh config after payment
 let getEmailConfig = () => ({ emailUser: 'fallback@gmail.com', emailPass: 'pass', sellerEmail: 'owner@example.com' });
 
 async function loadEmailConfig() {
@@ -52,6 +55,7 @@ loadEmailConfig();
 const storeRoutesFactory = require('./routes/store');
 const adminRoutesFactory = require('./routes/admin');
 
+// Pass the getter function – store.js no longer uses global transporter
 const storeRoutes = storeRoutesFactory(getEmailConfig, app);
 const adminRoutes = adminRoutesFactory(getEmailConfig, app);
 
@@ -81,12 +85,10 @@ async function seedData() {
       console.log('8 Products Seeded with placeholder images');
     }
 
-    // REMOVED EMPTY PAYPAL SEED — LET ADMIN SAVE IT
     if (await Config.countDocuments() === 0) {
       await new Config({
         stripePublishableKey: 'pk_test_xxx',
         stripeSecretKey: 'sk_test_xxx'
-        // paypalClientId and paypalSecret are NOT seeded
       }).save();
       console.log('Payment Config Seeded (PayPal keys must be set in admin)');
     }
@@ -97,6 +99,14 @@ async function seedData() {
 
 seedData();
 
+// --- FINAL FALLBACK ROUTE (404) ---
+app.use((req, res) => {
+  res.status(404).send('<h1>404 - Page Not Found</h1><a href="/">Back to Shop</a>');
+});
+
 // --- SERVER ---
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`http://localhost:${PORT}`);
+});

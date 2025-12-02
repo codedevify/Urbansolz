@@ -140,65 +140,61 @@
       margin-top:10px;
     }
 
-    /* === CHECKOUT FORM === */
-    form{
+    /* === EMAIL INPUT (shared) === */
+    .email-wrapper {
       background:#fff;
       border-radius:20px;
       box-shadow:0 8px 25px rgba(0,0,0,0.08);
       padding:25px;
+      margin-bottom:20px;
       text-align:center;
-      transition:transform .3s;
     }
-    form:hover{transform:translateY(-3px);}
-    form input{
+    .email-wrapper input {
       width:100%;
-      padding:12px 14px;
+      padding:14px 16px;
       border:1px solid #ccc;
-      border-radius:10px;
-      font-size:1rem;
-      margin-bottom:15px;
-      transition:border-color .3s,box-shadow .3s;
+      border-radius:12px;
+      font-size:1.1rem;
     }
-    form input:focus{
+    .email-wrapper input:focus {
       border-color:#a1887f;
-      box-shadow:0 0 6px rgba(161,136,127,0.5);
+      box-shadow:0 0 8px rgba(161,136,127,0.4);
       outline:none;
     }
-    form button{
-      width:100%;
-      padding:12px;
-      background:#3e2723;
-      color:#fff;
-      border:none;
-      border-radius:25px;
-      font-size:1rem;
-      font-weight:600;
-      cursor:pointer;
-      transition:background .3s,transform .3s;
-    }
-    form button:hover{
-      background:#a1887f;
-      color:#3e2723;
-      transform:scale(1.05);
-    }
 
-    /* === PAYPAL CONTAINER === */
+    /* === PAYMENT BUTTONS === */
+    .payment-buttons {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .payment-btn {
+      flex: 1;
+      min-width: 280px;
+      padding: 16px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all .3s;
+      text-align: center;
+    }
+    .stripe-btn {
+      background: #635bff;
+      color: white;
+    }
+    .stripe-btn:hover { background: #4c46cc; transform: scale(1.03); }
+    .paypal-btn {
+      background: #ffc439;
+      color: #1a1a1a;
+    }
+    .paypal-btn:hover { background: #ffcf5e; transform: scale(1.03); }
+
     #paypal-button-container {
       margin-top: 20px;
-    }
-
-    .paypal-fallback{
-      margin-top:20px;
-      width:100%;
-      padding:12px;
-      background:#ffb400;
-      color:#3e2723;
-      border:none;
-      border-radius:25px;
-      font-size:1rem;
-      font-weight:600;
-      cursor:not-allowed;
-      opacity:0.8;
+      min-height: 50px;
     }
 
     .empty{
@@ -225,6 +221,8 @@
       main h1{font-size:1.7rem;}
       .cart-item{flex-direction:column;align-items:flex-start;}
       .totals-breakdown .final-total{font-size:1.25rem;}
+      .payment-buttons { flex-direction: column; }
+      .payment-btn { min-width: 100%; }
     }
   </style>
 </head>
@@ -263,7 +261,6 @@
         </div>
       <% }) %>
 
-      <!-- TOTALS BREAKDOWN -->
       <div class="totals-breakdown">
         <div>
           <span>Subtotal</span>
@@ -279,7 +276,6 @@
         </div>
       </div>
 
-      <!-- CLEAR ALL -->
       <div style="text-align:center; margin-top:20px;">
         <form action="/clear-cart" method="POST" style="display:inline;">
           <button type="submit" class="clear-all" style="width:50%">Clear All</button>
@@ -287,71 +283,108 @@
       </div>
     </div>
 
-    <!-- Stripe Checkout -->
-    <form action="/checkout" method="POST" id="stripeForm">
-      <input type="email" name="email" id="emailInput" placeholder="Your Email" required>
-      <button type="submit">Pay with Stripe – £<%= (total + 3.99).toFixed(2) %></button>
+    <!-- Shared Email Input -->
+    <div class="email-wrapper">
+      <input type="email" id="customerEmail" placeholder="Your Email Address" required>
+    </div>
+
+    <!-- Payment Buttons -->
+    <div class="payment-buttons">
+      <button type="button" class="payment-btn stripe-btn" id="stripeCheckoutBtn">
+        Pay with Stripe – £<%= (total + 3.99).toFixed(2) %>
+      </button>
+
+      <% if (paypalClientId && paypalClientId.trim() !== '') { %>
+        <button type="button" class="payment-btn paypal-btn" id="paypalCheckoutBtn">
+          Pay with PayPal – £<%= (total + 3.99).toFixed(2) %>
+        </button>
+      <% } %>
+    </div>
+
+    <!-- PayPal Container (hidden until clicked) -->
+    <div id="paypal-button-container"></div>
+
+    <!-- Hidden form for Stripe (will be submitted via JS) -->
+    <form action="/checkout" method="POST" id="hiddenStripeForm">
+      <input type="hidden" name="email" id="hiddenEmailField">
     </form>
-
-    <!-- PayPal Checkout -->
-    <% if (paypalClientId && paypalClientId.trim() !== '') { %>
-      <div id="paypal-button-container"></div>
-
-      <script src="https://www.paypal.com/sdk/js?client-id=<%= paypalClientId %>&currency=GBP"></script>
-      <script>
-        function initPayPal() {
-          if (typeof paypal === 'undefined') {
-            document.getElementById('paypal-button-container').innerHTML =
-              '<button class="paypal-fallback" disabled>PayPal is down</button>';
-            return;
-          }
-
-          paypal.Buttons({
-            createOrder: function(data, actions) {
-              const email = document.getElementById('emailInput').value.trim();
-              if (!email) {
-                alert('Please enter your email address.');
-                return;
-              }
-              return fetch('/create-paypal-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email })
-              })
-              .then(res => res.json())
-              .then(order => order.id);
-            },
-            onApprove: function(data, actions) {
-              return fetch('/capture-paypal-order/' + data.orderID, {
-                method: 'POST'
-              })
-              .then(res => res.json())
-              .then(details => {
-                alert('Transaction completed!');
-                window.location.href = '/success';
-              });
-            },
-            onError: function(err) {
-              console.error(err);
-              alert('PayPal payment failed.');
-            }
-          }).render('#paypal-button-container')
-          .catch(err => {
-            console.error('PayPal render error:', err);
-            document.getElementById('paypal-button-container').innerHTML =
-              '<button class="paypal-fallback" disabled>PayPal is down</button>';
-          });
-        }
-
-        setTimeout(initPayPal, 500);
-      </script>
-    <% } else { %>
-      <p style="margin-top:20px; color:#a1887f;">PayPal not configured.</p>
-    <% } %>
   <% } %>
 
   <a class="back-link" href="/">Continue Shopping</a>
 </main>
+
+<script>
+  // Get email once
+  const emailInput = document.getElementById('customerEmail');
+  const stripeBtn = document.getElementById('stripeCheckoutBtn');
+  const paypalBtn = document.getElementById('paypalCheckoutBtn');
+  const hiddenForm = document.getElementById('hiddenStripeForm');
+  const hiddenEmail = document.getElementById('hiddenEmailField');
+
+  // Stripe Checkout
+  if (stripeBtn) {
+    stripeBtn.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
+      }
+      hiddenEmail.value = email;
+      hiddenForm.submit();
+    });
+  }
+
+  // PayPal Checkout
+  if (paypalBtn) {
+    paypalBtn.addEventListener('click', () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address');
+        return;
+      }
+
+      // Load PayPal SDK only when clicked
+      if (typeof paypal !== 'undefined') {
+        renderPayPalButtons(email);
+      } else {
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=<%= paypalClientId %>&currency=GBP`;
+        script.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent('<%= paypalClientId %>') + '&currency=GBP&intent=capture';
+        script.onload = () => renderPayPalButtons(email);
+        document.head.appendChild(script);
+      }
+    });
+  }
+
+  function renderPayPalButtons(customerEmail) {
+    if (typeof paypal === 'undefined') return;
+
+    paypal.Buttons({
+      createOrder: (data, actions) => {
+        return fetch('/create-paypal-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: customerEmail })
+        })
+        .then(res => res.json())
+        .then(order => order.id);
+      },
+      onApprove: (data) => {
+        return fetch('/capture-paypal-order/' + data.orderID, {
+          method: 'POST'
+        })
+        .then(res => res.json())
+        .then(() => {
+          window.location.href = '/success';
+        });
+      },
+      onError: (err) => {
+        console.error(err);
+        alert('PayPal payment failed. Please try again.');
+      }
+    }).render('#paypal-button-container');
+  }
+</script>
 
 </body>
 </html>
