@@ -98,7 +98,7 @@ module.exports = function(getEmailConfig, app) {
     res.render('cart', { cart, total, paypalClientId });
   });
 
-  // STRIPE CHECKOUT – only creates session, NO email sent here
+  // STRIPE CHECKOUT – NOW INCLUDES SHIPPING FEE AS LINE ITEM
   router.post('/checkout', async (req, res) => {
     try {
       const config = await Config.findOne();
@@ -110,11 +110,9 @@ module.exports = function(getEmailConfig, app) {
       const cart = req.session.cart || [];
       if (cart.length === 0) return res.redirect('/cart');
 
-      const totalCents = Math.round((cart.reduce((sum, i) => sum + i.price * i.quantity, 0) + 3.99) * 100);
-
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: cart.map(item => ({
+      // Build line items including shipping
+      const lineItems = [
+        ...cart.map(item => ({
           price_data: {
             currency: 'gbp',
             product_data: { name: item.displayName || item.name },
@@ -122,6 +120,19 @@ module.exports = function(getEmailConfig, app) {
           },
           quantity: item.quantity
         })),
+        {
+          price_data: {
+            currency: 'gbp',
+            product_data: { name: 'Shipping (UK Standard)' },
+            unit_amount: 399 // £3.99
+          },
+          quantity: 1
+        }
+      ];
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: lineItems,
         mode: 'payment',
         success_url: `${req.protocol}://${req.get('host')}/stripe-success?session_id={CHECKOUT_SESSION_ID}&email=${encodeURIComponent(req.body.email)}`,
         cancel_url: `${req.protocol}://${req.get('host')}/cart`
